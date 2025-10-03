@@ -15,6 +15,7 @@ public class TabView : ViewBase
     private TabsVariant _variant = TabsVariant.Content;
     private bool _removeParentPadding = false;
     private Thickness? _padding = new Thickness(4);
+    private bool _wrap = false;
 
     /// <summary>
     /// Internal constructor that initializes a TabView with predefined tabs.
@@ -242,6 +243,17 @@ public class TabView : ViewBase
     }
 
     /// <summary>
+    /// Sets whether the tabs will wrap to a new line when overflowing in x direction.
+    /// </summary>
+    /// <param name="wrap">Whether the tabs will wrap to a new line when overflowing in x direction.</param>
+    /// <returns>The current TabView instance for method chaining.</returns>
+    public TabView Wrap(bool wrap)
+    {
+        _wrap = wrap;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the final tabbed layout widget with tab selection state management.
     /// </summary>
     /// <returns>A TabsLayout widget configured with the current settings and tab selection state.</returns>
@@ -256,6 +268,6 @@ public class TabView : ViewBase
 
         return new TabsLayout(OnTabSelect, null, null, null, selectedIndex.Value,
             _tabs.ToArray()
-        ).Variant(_variant).Width(_width).Height(_height).RemoveParentPadding(_removeParentPadding).Padding(_padding);
+        ).Variant(_variant).Width(_width).Height(_height).RemoveParentPadding(_removeParentPadding).Padding(_padding).Wrap(_wrap);
     }
 }

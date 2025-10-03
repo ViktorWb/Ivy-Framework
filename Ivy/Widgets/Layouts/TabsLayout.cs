@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Ivy.Core;
 using Ivy.Shared;
+using Ivy.Views;
 
 // ReSharper disable once CheckNamespace
 namespace Ivy;
@@ -52,8 +53,12 @@ public record TabsLayout : WidgetBase<TabsLayout>
 
     /// <summary> Gets or sets whether to remove any padding inherited from parent containers. </summary>
     [Prop] public bool RemoveParentPadding { get; set; }
+
     /// <summary> Gets or sets the padding around the tabs layout container. </summary>
     [Prop] public Thickness? Padding { get; set; } = new Thickness(4);
+
+    /// <summary> Gets or sets whether the tabs will wrap to a new line when overflowing in x direction. </summary>
+    [Prop] public bool Wrap { get; set; } = false;
 
     /// <summary> Gets or sets the event handler for tab selection events. </summary>
     [Event] public Func<Event<TabsLayout, int>, ValueTask>? OnSelect { get; set; }
@@ -144,6 +149,14 @@ public static class TabsLayoutExtensions
     public static TabsLayout Padding(this TabsLayout tabsLayout, int left, int top, int right, int bottom)
     {
         return tabsLayout with { Padding = new Thickness(left, top, right, bottom) };
+    }
+
+    /// <summary> Sets whether the tabs will wrap to a new line when overflowing in x direction. </summary>
+    /// <param name="tabsLayout">The TabsLayout to configure.</param>
+    /// <param name="wrap">Whether the tabs will wrap to a new line when overflowing in x direction.</param>
+    public static TabsLayout Wrap(this TabsLayout tabsLayout, bool wrap)
+    {
+        return tabsLayout with { Wrap = wrap };
     }
 }
 

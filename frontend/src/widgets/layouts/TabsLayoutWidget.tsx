@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { getPadding } from '@/lib/styles';
+import { getPadding, getWidth } from '@/lib/styles';
 import {
   DndContext,
   closestCenter,
@@ -52,6 +52,8 @@ interface TabsLayoutWidgetProps {
   children: React.ReactElement<TabWidgetProps>[];
   events: string[];
   padding?: string;
+  width?: string;
+  wrap: boolean;
 }
 
 function SortableTabTrigger({
@@ -170,6 +172,8 @@ export const TabsLayoutWidget = ({
   removeParentPadding,
   variant = 'Tabs',
   padding,
+  width,
+  wrap,
 }: TabsLayoutWidgetProps) => {
   const tabWidgets = React.Children.toArray(children).filter(
     child =>
@@ -210,6 +214,7 @@ export const TabsLayoutWidget = ({
   const [activeStyle, setActiveStyle] = React.useState({
     left: '0px',
     width: '0px',
+    top: '0px',
   });
   const [isInitialRender, setIsInitialRender] = React.useState(true);
 
@@ -230,10 +235,12 @@ export const TabsLayoutWidget = ({
     if (variant !== 'Content') return;
     const activeElement = tabRefs.current[activeIndex];
     if (activeElement) {
-      const { offsetLeft, offsetWidth } = activeElement;
+      const { offsetLeft, offsetWidth, offsetTop, clientHeight } =
+        activeElement;
       setActiveStyle({
         left: `${offsetLeft}px`,
         width: `${offsetWidth}px`,
+        top: `${clientHeight + offsetTop + 4}px`,
       });
 
       // After first position update, enable animations
@@ -730,35 +737,36 @@ export const TabsLayoutWidget = ({
           removeParentPadding && 'remove-parent-padding'
         )}
       >
-        <div className="relative">
-          {/* Hover Highlight */}
-          <div
-            className="absolute h-[26px] transition-all duration-300 ease-out bg-accent/20 rounded-[6px] flex items-center"
-            style={{
-              opacity: activeIndex !== null ? 1 : 0,
-              pointerEvents: 'none',
-            }}
-          />
-          {/* Active Indicator */}
-          <div
-            className={cn(
-              'absolute bottom-[-6px] h-[2px] bg-foreground',
-              !isInitialRender && 'transition-all duration-300 ease-out'
-            )}
-            style={activeStyle}
-          />
-          {/* Tabs */}
-          <div
-            className="relative flex space-x-[6px] items-center"
-            role="tablist"
-          >
-            {orderedTabWidgets.map((tabWidget, index) => {
-              if (!React.isValidElement(tabWidget)) return null;
-              const props = tabWidget.props as Partial<TabWidgetProps>;
-              if (!props.id) return null;
-              const { title, id } = props;
-              return (
-                <div
+        <div style={{ ...getWidth(width), scrollbarWidth: 'none' }} className="overflow-x-auto pb-[6px]">
+          <div className="relative">
+            {/* Hover Highlight */}
+            <div
+              className="absolute h-[26px] transition-all duration-300 ease-out bg-accent/20 rounded-[6px] flex items-center"
+              style={{
+                opacity: activeIndex !== null ? 1 : 0,
+                pointerEvents: 'none',
+              }}
+              />
+            {/* Active Indicator */}
+            <div
+              className={cn(
+                'absolute bottom-[-6px] h-[2px] bg-foreground',
+                !isInitialRender && 'transition-all duration-300 ease-out'
+              )}
+              style={activeStyle}
+              />
+            {/* Tabs */}
+            <div
+              className={cn("relative flex space-x-[6px] gap-y-[20px] items-center", wrap ? 'flex-wrap' : null)}
+              role="tablist"
+              >
+              {orderedTabWidgets.map((tabWidget, index) => {
+                if (!React.isValidElement(tabWidget)) return null;
+                const props = tabWidget.props as Partial<TabWidgetProps>;
+                if (!props.id) return null;
+                const { title, id } = props;
+                return (
+                  <div
                   key={id}
                   ref={el => {
                     tabRefs.current[index] = el;
@@ -768,26 +776,27 @@ export const TabsLayoutWidget = ({
                   tabIndex={0}
                   className={cn(
                     'px-3 py-1.5 cursor-pointer transition-colors duration-300 h-[26px]',
-                    index === activeIndex
+                      index === activeIndex
                       ? 'text-foreground'
                       : 'text-muted-foreground'
-                  )}
-                  onClick={() => {
-                    // Mark as user-initiated for Content variant
-                    isUserInitiatedChangeRef.current = true;
-                    const tabId = tabOrder[index];
-                    addToLoadedTabs(tabId);
-                    setActiveIndex(index);
-                    setActiveTabId(tabId);
-                    eventHandler('OnSelect', id, [index]);
-                  }}
-                >
-                  <div className="text-sm font-medium leading-4 whitespace-nowrap flex items-center justify-center h-full">
-                    {title}
+                    )}
+                    onClick={() => {
+                      // Mark as user-initiated for Content variant
+                      isUserInitiatedChangeRef.current = true;
+                      const tabId = tabOrder[index];
+                      addToLoadedTabs(tabId);
+                      setActiveIndex(index);
+                      setActiveTabId(tabId);
+                      eventHandler('OnSelect', id, [index]);
+                    }}
+                    >
+                    <div className="text-sm font-medium leading-4 whitespace-nowrap flex items-center justify-center h-full">
+                      {title}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
         <div className="flex-1 overflow-hidden">
